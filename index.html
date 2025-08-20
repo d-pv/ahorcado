@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego del Ahorcado</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f0f0; }
+        #word { font-size: 2em; letter-spacing: 0.2em; margin: 20px; }
+        #letters button { margin: 5px; padding: 10px; font-size: 1em; }
+        #hangman-img { width: 200px; margin: 20px; }
+        #category { font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Juego del Ahorcado</h1>
+    <div id="category"></div>
+    <img id="hangman-img" src="images/0.png" alt="Ahorcado">
+    <div id="word"></div>
+    <div id="letters"></div>
+    <script>
+        const categories = {
+            libros: ["quijote", "hamlet", "odisea", "frankenstein", "dracula", "miserables", "hobbit", "ulises", "inferno", "iliada", "cien", "soledad", "rayuela", "don", "juan", "ana", "karenina", "emma", "orgullo", "prejuicio", "sombra", "viento", "nombre", "rosa", "crimen", "castigo", "madame", "bovary", "cuento", "navidad", "principito", "farenheit", "1984", "animal", "granja", "metro", "zorro", "moby", "dick", "sherlock", "holmes", "dorian", "gray", "verne", "viaje", "centro", "tierra", "capitán", "nemo", "isla", "tesoro", "corazón", "tinieblas", "lobo", "estepario", "demian", "siddharta", "camino", "zen", "arte", "guerra", "ensayo", "ceguera", "ensayo", "lucidez", "ensayo", "amor", "tiempo", "colera", "noche", "tiempo", "hielo", "fuego", "juego", "tronos", "danza", "dragones", "choque", "reyes", "festin", "cuervos", "tormenta", "espadas", "reina", "roja", "loba", "mar", "luz", "negra", "hija", "reloj", "arena", "guardian", "centeno", "viaje", "alucinante", "cuento", "fantasma", "cuento", "hadas", "cuento", "terror", "cuento", "amor"],
+            peliculas: ["titanic", "avatar", "inception", "matrix", "gladiator", "rocky", "godfather", "scarface", "alien", "predator", "terminator", "batman", "superman", "spiderman", "joker", "frozen", "encanto", "coco", "toy", "story", "cars", "up", "soul", "ratatouille", "nemo", "dory", "shrek", "madagascar", "kung", "fu", "panda", "moana", "mulan", "aladdin", "hercules", "tarzan", "bambi", "dumbo", "pinocho", "cenicienta", "bella", "bestia", "rey", "leon", "harry", "potter", "hobbit", "anillos", "star", "wars", "marvel", "avengers", "iron", "man", "thor", "hulk", "capitan", "america", "pantera", "negra", "doctor", "strange", "viuda", "negra", "guardianes", "galaxia", "antman", "deadpool", "logan", "xmen", "wolverine", "dune", "interstellar", "gravity", "arrival", "contact", "et", "jurassic", "park", "indiana", "jones", "piratas", "caribe", "notebook", "diario", "pasión", "amor", "drama", "comedia", "terror", "suspense", "acción", "aventura", "musical", "documental", "biografía"],
+            musica: ["rock", "pop", "reggaeton", "rap", "hiphop", "jazz", "blues", "clasica", "electronica", "techno", "house", "salsa", "merengue", "bachata", "flamenco", "sevillanas", "rumba", "trap", "indie", "folk", "punk", "metal", "grunge", "funk", "disco", "soul", "gospel", "country", "tango", "cumbia", "vallenato", "ska", "dubstep", "rave", "ambient", "newage", "reggae", "instrumental", "acustico", "orquesta", "sinfonia", "cantautor", "duo", "banda", "grupo", "solista", "voz", "guitarra", "piano", "bateria", "violin", "saxofon", "trompeta", "flauta", "arpa", "coro", "melodia", "ritmo", "compas", "nota", "acorde", "escala", "tono", "clave", "tempo", "letra", "cancion", "album", "disco", "single", "hit", "top", "lista", "premio", "grammy", "mtv", "billboard", "artista", "cantante", "compositor", "productor", "dj", "festival", "concierto", "gira", "escenario", "microfono", "altavoz", "mezcla", "grabacion", "estudio", "cover", "remix", "versión", "original"],
+            deportes: ["futbol", "baloncesto", "tenis", "natacion", "atletismo", "ciclismo", "boxeo", "karate", "judo", "taekwondo", "golf", "rugby", "beisbol", "hockey", "voleibol", "esgrima", "remo", "surf", "escalada", "senderismo", "patinaje", "snowboard", "esqui", "motociclismo", "automovilismo", "formula", "uno", "rally", "maraton", "triatlon", "pentatlon", "halterofilia", "lucha", "gymnasia", "trampolin", "salto", "altura", "longitud", "peso", "disco", "jabalina", "tiro", "arco", "tiro", "pistola", "tiro", "rifle", "ajedrez", "dardos", "billar", "pingpong", "padel", "squash", "cricket", "softball", "polo", "vela", "windsurf", "kitesurf", "paracaidismo", "parapente", "ala", "delta", "buceo", "apnea", "trineo", "bobsleigh", "curling", "canotaje", "kayak", "rafting", "skate", "parkour", "freerunning", "capoeira", "sumo", "muaythai", "kickboxing", "crossfit", "fitness", "yoga", "pilates", "zumba", "spinning", "aerobic", "step", "bodypump", "taichi", "chi", "kungfu", "ninjutsu", "kravmaga"]
+        };
+
+        let selectedCategory = "";
+        let selectedWord = "";
+        let guessed = [];
+        let mistakes = 0;
+        const maxMistakes = 6;
+
+        function randomWord() {
+            const keys = Object.keys(categories);
+            selectedCategory = keys[Math.floor(Math.random() * keys.length)];
+            const words = categories[selectedCategory];
+            selectedWord = words[Math.floor(Math.random() * words.length)].toLowerCase();
+            guessed = [];
+            mistakes = 0;
+            document.getElementById("category").innerText = "Categoría: " + selectedCategory;
+            document.getElementById("hangman-img").src = "images/0.png";
+            updateWord();
+        }
+
+        function updateWord() {
+            const display = selectedWord.split("").map(letter => guessed.includes(letter) ? letter : "_").join(" ");
+            document.getElementById("word").innerText = display;
+            if (!display.includes("_")) {
+                alert("¡Has ganado!");
+                randomWord();
+            }
+        }
+
+        function handleGuess(letter) {
+            if (!guessed.includes(letter)) {
+                guessed.push(letter);
+                if (!selectedWord.includes(letter)) {
+                    mistakes++;
+                    document.getElementById("hangman-img").src = "images/" + mistakes + ".png";
+                    if (mistakes >= maxMistakes) {
+                        alert("Has perdido. La palabra era: " + selectedWord);
+                        randomWord();
+                    }
+                }
+                updateWord();
+            }
+        }
+
+        function createButtons() {
+            const container = document.getElementById("letters");
+            container.innerHTML = "";
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i).toLowerCase();
+                const btn = document.createElement("button");
+                btn.innerText = letter;
+                btn.onclick = () => handleGuess(letter);
+                container.appendChild(btn);
+            }
+        }
+
+        document.addEventListener("keydown", function(event) {
+            const letter = event.key.toLowerCase();
+            if (/^[a-zñáéíóúü]$/.test(letter)) {
+                handleGuess(letter);
+            }
+        });
+
+        createButtons();
+        randomWord();
+    </script>
+</body>
+</html>
